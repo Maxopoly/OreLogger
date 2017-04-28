@@ -47,7 +47,6 @@ public class LogManager {
 	}
 
 	public void logBreak(int y, String type, String amount, Biome biome) {
-		System.out.println(type + ";;" + amount + ";;" + y + ";;" + biome.getBiomeName());
 		contentToSave.add(type + ";;" + amount + ";;" + y + ";;" + biome.getBiomeName() + "\n");
 	}
 
