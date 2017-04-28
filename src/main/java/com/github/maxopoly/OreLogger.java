@@ -20,7 +20,7 @@ public class OreLogger {
 		instance = this;
 		mc = Minecraft.getMinecraft();
 		LogManager logger = new LogManager();
-		MinecraftForge.EVENT_BUS.register(new ChatListener(logger));
+		MinecraftForge.EVENT_BUS.register(new Listener(logger));
 	}
 
 }

@@ -7,13 +7,13 @@ import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent;
 
-public class ChatListener {
+public class Listener {
 
 	private static Pattern hiddenOreRegex = Pattern.compile("You found a hidden ore! ([0-9]+) ([a-zA-Z ^(nearby)]+)( nearby)??");
 	private LogManager logger;
 	private int cachedY;
 
-	public ChatListener(LogManager logger) {
+	public Listener(LogManager logger) {
 		this.logger = logger;
 	}
 
