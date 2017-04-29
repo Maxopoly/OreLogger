@@ -21,7 +21,7 @@ public class HiddenOreSpawnManager implements LogProvider {
 			toolString = tool.getItem().getUnlocalizedName() + ";;" + tool.getEnchantmentTagList().toString();
 
 		}
-		logged.add((type + SEP + amount + SEP + y + SEP + biome.getBiomeName() + toolString));
+		logged.add((type + SEP + amount + SEP + y + SEP + biome.getBiomeName() + SEP + toolString));
 
 	}
 

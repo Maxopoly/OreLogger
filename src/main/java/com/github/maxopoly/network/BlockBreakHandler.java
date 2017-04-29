@@ -38,9 +38,9 @@ public class BlockBreakHandler extends ChannelOutboundHandlerAdapter {
 		// at this point we have confirmed that some kind of block was broken, so we check what kind. We can use forge
 		// events for just any kind of interaction in general, but not for block breaks specificially, so we pull the item
 		// the player used to mine and the block he mined from the interact event
-		if (OreLogger.instance.getListener().getCachedMaterial() == Material.ROCK) {
+		if (OreLogger.instance.getListener().getCachedMaterial() == Material.ROCK
+				&& OreLogger.instance.getListener().getCachedVariant() == 0) {
 			// confirmed stone break
-			// TODO adress andesite etc.
 			sbCounter.breakOccured(OreLogger.instance.getListener().getCachedBlockPos());
 		}
 	}

@@ -7,6 +7,7 @@ import com.github.maxopoly.network.VersionChecker;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
@@ -29,6 +30,8 @@ public class Listener {
 	private ItemStack cachedItem;
 	// material of the block the player last interacted with
 	private Material cachedMaterial;
+	// variant of the block the player last interacted with
+	private int cachedVariant;
 
 	public Listener(StoneBreakCounter sbCounter, HiddenOreSpawnManager hoManager) {
 		this.hoManager = hoManager;
@@ -45,6 +48,10 @@ public class Listener {
 
 	public Material getCachedMaterial() {
 		return cachedMaterial;
+	}
+
+	public int getCachedVariant() {
+		return cachedVariant;
 	}
 
 	@SubscribeEvent
@@ -93,7 +100,9 @@ public class Listener {
 	public void onBlockInteract(PlayerInteractEvent event) {
 		cachedItem = event.getItemStack();
 		cachedBlockPos = event.getPos();
-		Material mat = Minecraft.getMinecraft().theWorld.getBlockState(event.getPos()).getMaterial();
+		IBlockState state = Minecraft.getMinecraft().theWorld.getBlockState(event.getPos());
+		Material mat = state.getMaterial();
+		cachedVariant = state.getBlock().getMetaFromState(state);
 		// we use this to detect the material of a broken block, so we want to ignore air, because otherwise this would
 		// always be set to air at the point we handle a block break
 		if (mat != Material.AIR) {
