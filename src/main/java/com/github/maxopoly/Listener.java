@@ -3,6 +3,7 @@ package com.github.maxopoly;
 import com.github.maxopoly.logging.HiddenOreSpawnManager;
 import com.github.maxopoly.logging.StoneBreakCounter;
 import com.github.maxopoly.network.BlockBreakHandler;
+import com.github.maxopoly.network.VersionChecker;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.minecraft.block.material.Material;
@@ -68,6 +69,7 @@ public class Listener {
 
 	@SubscribeEvent
 	public void onConnect(ClientConnectedToServerEvent event) {
+		VersionChecker.checkVersion();
 		// forges api doesnt offer a listener for block breaks client side only, so we resort to dirty hacks. To understand
 		// how this works,
 		// you need a basic understanding of netty
