@@ -1,5 +1,8 @@
 package com.github.maxopoly;
 
+import com.github.maxopoly.logging.HiddenOreSpawnManager;
+import com.github.maxopoly.logging.LogManager;
+import com.github.maxopoly.logging.StoneBreakCounter;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
@@ -13,14 +16,28 @@ public class OreLogger {
 
 	public static OreLogger instance;
 
+	private Listener listener;
+	private LogManager logger;
+
 	Minecraft mc;
 
 	@EventHandler
 	public void init(FMLInitializationEvent event) {
 		instance = this;
 		mc = Minecraft.getMinecraft();
-		LogManager logger = new LogManager();
-		MinecraftForge.EVENT_BUS.register(new Listener(logger));
+		logger = new LogManager();
+		HiddenOreSpawnManager hoManager = new HiddenOreSpawnManager();
+		StoneBreakCounter stoneCounter = new StoneBreakCounter();
+		listener = new Listener(stoneCounter, hoManager);
+		MinecraftForge.EVENT_BUS.register(listener);
+	}
+
+	public Listener getListener() {
+		return listener;
+	}
+
+	public LogManager getLogger() {
+		return logger;
 	}
 
 }

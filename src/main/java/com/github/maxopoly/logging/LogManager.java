@@ -1,4 +1,4 @@
-package com.github.maxopoly;
+package com.github.maxopoly.logging;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -9,30 +9,30 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-
-import net.minecraft.world.biome.Biome;
+import net.minecraft.client.Minecraft;
 
 public class LogManager {
 
-	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-	private static final int saveDelay = 300; // every 5 minutes
+	private final static int saveDelay = 300; // every 5 minutes
 
-	private List<String> contentToSave;
+	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 	private File logFile;
+	private List<LogProvider> logProvider;
 
 	public LogManager() {
-		contentToSave = new LinkedList<String>();
-		File minecraftFolder = OreLogger.instance.mc.mcDataDir;
+		File minecraftFolder = Minecraft.getMinecraft().mcDataDir;
 		File saveFolder = new File(minecraftFolder, "loggedOres");
 		saveFolder.mkdir();
-		String playerName = OreLogger.instance.mc.getSession().getUsername();
-		logFile = new File(saveFolder, String.valueOf(playerName + "_" + System.currentTimeMillis()) + ".txt");
+		String playerName = Minecraft.getMinecraft().getSession().getUsername();
+		String serverIP = Minecraft.getMinecraft().getCurrentServerData().serverIP;
+		logFile = new File(saveFolder, String.valueOf(playerName + "_" + serverIP + "_" + System.currentTimeMillis())
+				+ ".txt");
 		try {
 			logFile.createNewFile();
 		} catch (IOException e) {
 			System.err.println("Failed to create log file, shutting down");
+			// TODO properly shutdown instead of just never clearing out cached logs
 			e.printStackTrace();
 			return;
 		}
@@ -40,21 +40,22 @@ public class LogManager {
 
 			@Override
 			public void run() {
-				writeOut();
+				pollAndWrite();
 			}
 		};
-		final ScheduledFuture<?> handle = scheduler.scheduleAtFixedRate(saver, saveDelay, saveDelay, TimeUnit.SECONDS);
+		scheduler.scheduleAtFixedRate(saver, saveDelay, saveDelay, TimeUnit.SECONDS);
 	}
 
-	public void logBreak(int y, String type, String amount, Biome biome) {
-		contentToSave.add(type + ";;" + amount + ";;" + y + ";;" + biome.getBiomeName() + "\n");
-	}
-
-	public void writeOut() {
-		synchronized (contentToSave) {
-			saveToFile(logFile, contentToSave);
-			contentToSave.clear();
+	public synchronized void pollAndWrite() {
+		List<String> toSave = new LinkedList<String>();
+		for (LogProvider provider : logProvider) {
+			toSave.addAll(provider.pullPendingMessagesAndFlush());
 		}
+		saveToFile(logFile, toSave);
+	}
+
+	public synchronized void registerLogProvider(LogProvider provider) {
+		logProvider.add(provider);
 	}
 
 	private static void saveToFile(File file, List<String> toSave) {
