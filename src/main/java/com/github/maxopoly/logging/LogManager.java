@@ -21,21 +21,7 @@ public class LogManager {
 	private List<LogProvider> logProvider;
 
 	public LogManager() {
-		File minecraftFolder = Minecraft.getMinecraft().mcDataDir;
-		File saveFolder = new File(minecraftFolder, "loggedOres");
-		saveFolder.mkdir();
-		String playerName = Minecraft.getMinecraft().getSession().getUsername();
-		String serverIP = Minecraft.getMinecraft().getCurrentServerData().serverIP;
-		logFile = new File(saveFolder, String.valueOf(playerName + "_" + serverIP + "_" + System.currentTimeMillis())
-				+ ".txt");
-		try {
-			logFile.createNewFile();
-		} catch (IOException e) {
-			System.err.println("Failed to create log file, shutting down");
-			// TODO properly shutdown instead of just never clearing out cached logs
-			e.printStackTrace();
-			return;
-		}
+		logProvider = new LinkedList<LogProvider>();
 		Runnable saver = new Runnable() {
 
 			@Override
@@ -46,10 +32,39 @@ public class LogManager {
 		scheduler.scheduleAtFixedRate(saver, saveDelay, saveDelay, TimeUnit.SECONDS);
 	}
 
+	public synchronized void genSaveFile() {
+		File minecraftFolder = Minecraft.getMinecraft().mcDataDir;
+		File saveFolder = new File(minecraftFolder, "loggedOres");
+		saveFolder.mkdir();
+		String playerName = Minecraft.getMinecraft().getSession().getUsername();
+		String serverIP = Minecraft.getMinecraft().getCurrentServerData().serverIP;
+		logFile = new File(saveFolder, playerName + "_" + serverIP + "_" + System.currentTimeMillis() + ".txt");
+		try {
+			logFile.createNewFile();
+		} catch (IOException e) {
+			System.err.println("Failed to create log file, shutting down");
+			// TODO properly shutdown
+			e.printStackTrace();
+			return;
+		}
+	}
+
 	public synchronized void pollAndWrite() {
+		if (Minecraft.getMinecraft().getCurrentServerData() == null) {
+			// not connected
+			return;
+		}
 		List<String> toSave = new LinkedList<String>();
 		for (LogProvider provider : logProvider) {
 			toSave.addAll(provider.pullPendingMessagesAndFlush());
+		}
+		// if there is nothing to save, we dont even create a file
+		if (toSave.size() == 0) {
+			return;
+		}
+		if (logFile == null) {
+			// logfile not initialized
+			genSaveFile();
 		}
 		saveToFile(logFile, toSave);
 	}
@@ -67,13 +82,16 @@ public class LogManager {
 			BufferedWriter bw = new BufferedWriter(fw);
 			PrintWriter writer = new PrintWriter(bw);
 			for (String line : toSave) {
-				writer.write(line);
-				System.out.println("Writing " + line + " to file");
+				writer.write(line + "\n");
 			}
 			writer.close();
 		} catch (IOException e) {
 			System.err.println("Failed to save to file");
 			e.printStackTrace();
 		}
+	}
+
+	public synchronized void resetSaveFile() {
+		logFile = null;
 	}
 }

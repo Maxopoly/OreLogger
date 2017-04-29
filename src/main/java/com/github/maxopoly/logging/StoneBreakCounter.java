@@ -24,6 +24,7 @@ public class StoneBreakCounter implements LogProvider {
 	public synchronized void breakOccured(BlockPos position) {
 		if (cachedPositions.contains(position)) {
 			// The same block is being broken repeatedly. We do not want to log it twice
+			System.out.println("Cancelling logging of stone, because position was already logged");
 			// TODO test this
 			return;
 		}
@@ -48,7 +49,7 @@ public class StoneBreakCounter implements LogProvider {
 		List<String> result = new LinkedList<String>();
 		for (Entry<String, int[]> entry : blocksMinedByYLevelOrderedByBiome.entrySet()) {
 			for (int i = 0; i < entry.getValue().length; i++) {
-				if (i != 0) {
+				if (entry.getValue()[i] != 0) {
 					// player actually broke at this y-level, we only want to log in this case
 					// example format is 'STONEBREAK;;;12;;;230;;;PLAINS' for 230 blocks broken at y 12 in plains
 					result.add("STONEBREAK" + SEP + i + SEP + entry.getValue()[i] + SEP + entry.getKey());
@@ -58,5 +59,4 @@ public class StoneBreakCounter implements LogProvider {
 		blocksMinedByYLevelOrderedByBiome.clear();
 		return result;
 	}
-
 }

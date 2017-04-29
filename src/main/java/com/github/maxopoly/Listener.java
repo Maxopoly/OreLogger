@@ -68,7 +68,8 @@ public class Listener {
 
 	@SubscribeEvent
 	public void onConnect(ClientConnectedToServerEvent event) {
-		// forges api doesnt offer a listener for block breaks, so we resort to dirty hacks. To understand how this works,
+		// forges api doesnt offer a listener for block breaks client side only, so we resort to dirty hacks. To understand
+		// how this works,
 		// you need a basic understanding of netty
 
 		// We insert our own outbound manager inbetween forge's packet handler and minecrafts packet handler. At this point
@@ -80,7 +81,10 @@ public class Listener {
 
 	@SubscribeEvent
 	public void onDisconnect(ClientDisconnectionFromServerEvent event) {
+		// write out all pending logs
 		OreLogger.instance.getLogger().pollAndWrite();
+		// reset save file so a new one is created if the player connects again
+		OreLogger.instance.getLogger().resetSaveFile();
 	}
 
 	@SubscribeEvent
@@ -91,9 +95,7 @@ public class Listener {
 		// we use this to detect the material of a broken block, so we want to ignore air, because otherwise this would
 		// always be set to air at the point we handle a block break
 		if (mat != Material.AIR) {
-			System.out.println("Setting interact mat to " + mat.toString());
 			cachedMaterial = mat;
 		}
 	}
-
 }

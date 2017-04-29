@@ -27,7 +27,9 @@ public class OreLogger {
 		mc = Minecraft.getMinecraft();
 		logger = new LogManager();
 		HiddenOreSpawnManager hoManager = new HiddenOreSpawnManager();
+		logger.registerLogProvider(hoManager);
 		StoneBreakCounter stoneCounter = new StoneBreakCounter();
+		logger.registerLogProvider(stoneCounter);
 		listener = new Listener(stoneCounter, hoManager);
 		MinecraftForge.EVENT_BUS.register(listener);
 	}
