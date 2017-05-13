@@ -43,5 +43,6 @@ public class BlockBreakHandler extends ChannelOutboundHandlerAdapter {
 			// confirmed stone break
 			sbCounter.breakOccured(OreLogger.instance.getListener().getCachedBlockPos());
 		}
+
 	}
 }
